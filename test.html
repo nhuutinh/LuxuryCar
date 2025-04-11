@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>So sánh xe Mercedes-Benz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #f0f4f8, #e0f7fa);
+    color: #333;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 32px;
+    margin: 30px 0;
+    color: #004d40;
+  }
+
+  .car-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 0 40px 60px;
+  }
+
+  .car-card {
+    background: linear-gradient(145deg, #ffffff, #e0f2f1);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: 0.3s ease;
+    animation: fadeInUp 0.6s ease;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .car-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  }
+
+  .car-card img {
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .car-card h3 {
+    font-size: 20px;
+    margin: 12px 0 4px;
+    color: #00695c;
+  }
+
+  .car-card p {
+    font-size: 14px;
+    margin: 2px 0;
+  }
+
+  .compare-toggle {
+    margin-top: 12px;
+    display: none;
+  }
+
+  #compare-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 1001;
+    padding: 14px 30px;
+    background: linear-gradient(to right, #00796b, #004d40);
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+
+  #compare-btn:hover {
+    background: linear-gradient(to right, #004d40, #00796b);
+  }
+
+  #overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    z-index: 999;
+  }
+
+  #popup {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 850px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
+    display: none;
+  }
+
+  #popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  #popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #popup-header h3 {
+    margin: 0;
+    color: #00796b;
+  }
+
+  #close-btn {
+    font-size: 24px;
+    color: #888;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  #close-btn:hover {
+    color: #000;
+  }
+
+  #popup table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  #popup th {
+    background: #004d40;
+    color: white;
+  }
+
+  #popup th, #popup td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+  }
+
+  #popup td {
+    background-color: #f1f8f6;
+  }
+  </style>
+</head>
+<body>
+  <h2>So sánh xe Mercedes-Benz</h2>
+  <div class="car-list" id="car-list"></div>
+  <button id="compare-btn" onclick="enableCompareMode()">
+    <i class="fas fa-search"></i> So sánh xe
+  </button>
+
+  <div id="overlay" onclick="closePopup()"></div>
+  <div id="popup">
+    <div id="popup-header">
+      <h3>So sánh xe</h3>
+      <span id="close-btn" onclick="closePopup()">✖</span>
+    </div>
+    <div id="popup-content"></div>
+  </div>
+
+  <script>
+    const cars = [
+      { id: "glc300", name: "GLC 300 4MATIC", price: "2.799.000.000₫", style: "SUV", drive: "AWD", power: "258 mã lực", engine: "2.0L", fuel: "Xăng", seats: "5 chỗ", image: "https://mercedes-benz.com.vn/wp-content/uploads/2023/05/GLC-300-4MATIC.png" },
+      { id: "c200", name: "C 200 Avantgarde", price: "1.669.000.000₫", style: "Sedan", drive: "RWD", power: "204 mã lực", engine: "1.5L", fuel: "Xăng", seats: "5 chỗ", image: "https://mercedes-benz.com.vn/wp-content/uploads/2023/05/C-200-Avantgarde.png" },
+      { id: "e300", name: "E 300 AMG", price: "2.999.000.000₫", style: "Sedan", drive: "RWD", power: "258 mã lực", engine: "2.0L", fuel: "Xăng", seats: "5 chỗ", image: "https://mercedes-benz.com.vn/wp-content/uploads/2023/05/E-300-AMG.png" },
+      { id: "s450", name: "S 450 Luxury", price: "5.199.000.000₫", style: "Sedan", drive: "AWD", power: "367 mã lực", engine: "3.0L", fuel: "Xăng", seats: "5 chỗ", image: "https://mercedes-benz.com.vn/wp-content/uploads/2023/05/S-450-Luxury.png" }
+    ];
+
+    let selectedCars = [];
+    let compareMode = false;
+    const carList = document.getElementById("car-list");
+
+    cars.forEach(car => {
+      const div = document.createElement("div");
+      div.className = "car-card";
+      div.innerHTML = `
+        <img src="${car.image}" alt="${car.name}" />
+        <h3>${car.name}</h3>
+        <p>${car.price}</p>
+        <div class="compare-toggle">
+          <input type="checkbox" onchange="handleCheckboxChange(this, '${car.id}')"> Chọn để so sánh
+        </div>
+      `;
+      carList.appendChild(div);
+    });
+
+    function enableCompareMode() {
+      compareMode = true;
+      document.querySelectorAll('.compare-toggle').forEach(el => el.style.display = 'block');
+    }
+
+    function handleCheckboxChange(checkbox, carId) {
+      if (!compareMode) return;
+
+      if (checkbox.checked) {
+        if (selectedCars.length < 2) {
+          selectedCars.push(carId);
+        } else {
+          checkbox.checked = false;
+          alert("Chỉ được chọn tối đa 2 xe để so sánh.");
+        }
+      } else {
+        selectedCars = selectedCars.filter(id => id !== carId);
+      }
+
+      if (selectedCars.length === 2) {
+        compareCars();
+        document.querySelectorAll('.compare-toggle').forEach(el => el.style.display = 'none');
+        compareMode = false;
+      }
+    }
+
+    function compareCars() {
+      const [id1, id2] = selectedCars;
+      const car1 = cars.find(c => c.id === id1);
+      const car2 = cars.find(c => c.id === id2);
+
+      const html = `
+        <table>
+          <tr><th>Thông số</th><th>${car1.name}</th><th>${car2.name}</th></tr>
+          <tr><td>Giá</td><td>${car1.price}</td><td>${car2.price}</td></tr>
+          <tr><td>Kiểu dáng</td><td>${car1.style}</td><td>${car2.style}</td></tr>
+          <tr><td>Dẫn động</td><td>${car1.drive}</td><td>${car2.drive}</td></tr>
+          <tr><td>Công suất</td><td>${car1.power}</td><td>${car2.power}</td></tr>
+          <tr><td>Động cơ</td><td>${car1.engine}</td><td>${car2.engine}</td></tr>
+          <tr><td>Nhiên liệu</td><td>${car1.fuel}</td><td>${car2.fuel}</td></tr>
+          <tr><td>Số chỗ ngồi</td><td>${car1.seats}</td><td>${car2.seats}</td></tr>
+        </table>
+      `;
+
+      document.getElementById("popup-content").innerHTML = html;
+      document.getElementById("overlay").style.display = "block";
+      const popup = document.getElementById("popup");
+      popup.style.display = "block";
+      setTimeout(() => popup.classList.add("show"), 10);
+
+      // reset checkboxes
+      document.querySelectorAll('.compare-toggle input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+
+    function closePopup() {
+      const popup = document.getElementById("popup");
+      popup.classList.remove("show");
+      setTimeout(() => {
+        popup.style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+        selectedCars = [];
+      }, 300);
+    }
+  </script>
+</body>
+</html>
